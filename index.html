@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Besiana Demi · Planifikimi mësimor</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="%232B4C9B"/><text x="32" y="41" font-family="Georgia" font-size="26" font-weight="bold" fill="white" text-anchor="middle">BD</text></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FDFCF9; --ink:#1C2B45; --soft:#48586F; --line:#D9DCE3;
+  --stamp:#2B4C9B; --stamp-2:#4a6cc0; --seal:#B3372E; --wash:#EEF1F7; --ok:#2E7D4F;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(43,76,155,.04) 31px 32px),
+    var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+  line-height:1.55;
+  min-height:100vh;
+}
+
+/* ───── Topbar ───── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(253,252,249,.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1.5px solid var(--line);
+}
+.topbar-in{
+  max-width:1060px;margin:0 auto;
+  display:flex;align-items:center;gap:14px;
+  padding:10px 16px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{flex-shrink:0}
+.brand-name{font-family:'IBM Plex Serif',serif;font-weight:700;font-size:18px;line-height:1.1}
+.brand-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--stamp)}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.nav button{
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  padding:9px 14px;border-radius:99px;border:1.5px solid transparent;background:none;color:var(--soft);cursor:pointer;
+  transition:.2s;
+}
+.nav button:hover{color:var(--ink);border-color:var(--line)}
+.nav button.active{background:var(--stamp);color:#fff;border-color:var(--stamp)}
+.nav button:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+
+/* ───── Toolbar ───── */
+.toolbar{
+  max-width:1060px;margin:14px auto 0;padding:0 16px;
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+}
+.tbtn{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:.04em;
+  padding:8px 13px;border-radius:9px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;
+  transition:.18s;
+}
+.tbtn:hover{border-color:var(--stamp);color:var(--stamp);transform:translateY(-1px)}
+.tbtn:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+.tbtn.danger:hover{border-color:var(--seal);color:var(--seal)}
+.save-state{
+  margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--soft);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.save-state .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);transition:.3s}
+.save-state.saving .dot{background:#C99B2E}
+
+.edit-hint{
+  max-width:1060px;margin:10px auto 0;padding:0 16px;
+  font-size:13px;color:var(--soft);
+}
+.edit-hint b{color:var(--stamp)}
+
+/* ───── Layout ───── */
+.wrap{max-width:1060px;margin:0 auto;padding:18px 16px 90px}
+.view{display:none;animation:fade .35s}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ───── Editable ───── */
+[contenteditable="true"]{
+  border-radius:6px;
+  transition:background .15s, box-shadow .15s;
+  min-width:24px;
+  outline:none;
+}
+[contenteditable="true"]:hover{background:rgba(43,76,155,.07)}
+[contenteditable="true"]:focus{background:#fff;box-shadow:0 0 0 2px var(--stamp)}
+[contenteditable="true"]:empty::before{content:"…";color:#B9C0CC}
+
+/* ───── Letterhead card ───── */
+.letterhead{
+  position:relative;border:1.5px solid var(--ink);border-radius:var(--r);
+  background:#fff;padding:30px 30px 24px;overflow:hidden;margin-bottom:20px;
+}
+.letterhead::before{content:"";position:absolute;inset:6px;border:1px solid var(--line);border-radius:9px;pointer-events:none}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:8px}
+h1.doc-title{font-family:'IBM Plex Serif',serif;font-size:clamp(22px,4vw,32px);font-weight:700;line-height:1.15;max-width:24ch}
+.subject{color:var(--soft);margin-top:8px;font-size:15px}
+.subject b{color:var(--ink)}
+.stamp{
+  position:absolute;top:20px;right:20px;transform:rotate(6deg);
+  border:2.5px solid var(--seal);color:var(--seal);border-radius:8px;padding:8px 14px;
+  font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;text-align:center;opacity:.9;
+}
+.stamp small{display:block;font-size:10px;letter-spacing:.2em;font-weight:500}
+.meta{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:22px;position:relative;
+}
+.meta > div{background:#fff;padding:11px 15px}
+.meta dt{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--soft)}
+.meta dd{font-weight:600;font-size:14.5px;margin-top:2px}
+
+/* ───── Section / dossier ───── */
+.period{
+  background:#fff;border:1.5px solid var(--line);border-radius:var(--r);
+  margin-top:18px;overflow:hidden;transition:border-color .25s, box-shadow .25s;
+}
+.period.open{border-color:var(--stamp);box-shadow:0 8px 28px rgba(43,76,155,.09)}
+.period-head{
+  width:100%;display:flex;align-items:center;gap:14px;padding:17px 20px;
+  background:none;border:none;cursor:pointer;text-align:left;font-family:inherit;color:inherit;
+}
+.period-head:focus-visible{outline:3px solid var(--stamp);outline-offset:-3px}
+.tag{
+  flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.08em;
+  color:var(--stamp);border:1.5px solid var(--stamp);border-radius:6px;padding:5px 9px;background:var(--wash);
+}
+.period-title{flex:1;min-width:0}
+.period-title h2{font-family:'IBM Plex Serif',serif;font-size:clamp(15px,2.4vw,19px);font-weight:600;line-height:1.3}
+.period-title p{font-size:12.5px;color:var(--soft);margin-top:2px}
+.chev{
+  flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);
+  display:grid;place-items:center;transition:.3s;color:var(--soft);font-size:12px;
+}
+.period.open .chev{transform:rotate(180deg);border-color:var(--stamp);background:var(--stamp);color:#fff}
+.period-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.22,1,.36,1)}
+.period.open .period-body{grid-template-rows:1fr}
+.period-inner{overflow:hidden}
+.period-content{padding:2px 20px 20px;border-top:1px dashed var(--line)}
+
+.section-label{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--soft);margin:18px 0 10px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* rows with delete */
+.row-item{position:relative;display:flex;align-items:flex-start;gap:10px;padding:9px 34px 9px 10px;border-radius:10px;transition:background .18s}
+.row-item:hover{background:var(--wash)}
+.row-item .bullet{color:var(--stamp);font-family:'IBM Plex Mono',monospace;font-weight:600;flex-shrink:0;margin-top:1px}
+.row-item .txt{flex:1;font-size:14.5px}
+.del{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;border-radius:7px;border:none;background:none;color:#C4CAD5;cursor:pointer;font-size:15px;line-height:1;
+  opacity:0;transition:.18s;display:grid;place-items:center;
+}
+.row-item:hover .del,.wrow:hover .del,.unit-line:hover .del{opacity:1}
+.del:hover{background:#FBEAE8;color:var(--seal)}
+.del:focus-visible{opacity:1;outline:2px solid var(--seal)}
+.add{
+  display:inline-flex;align-items:center;gap:7px;margin-top:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+  padding:7px 12px;border-radius:9px;border:1.5px dashed var(--line);background:none;color:var(--soft);cursor:pointer;transition:.18s;
+}
+.add:hover{border-color:var(--stamp);color:var(--stamp);border-style:solid}
+.add:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+
+/* units checklist */
+.unit-line{position:relative;display:flex;align-items:flex-start;gap:12px;padding:10px 34px 10px 10px;border-radius:10px;transition:background .18s}
+.unit-line:hover{background:var(--wash)}
+.ck{
+  flex-shrink:0;width:21px;height:21px;margin-top:2px;border:2px solid var(--soft);border-radius:6px;
+  display:grid;place-items:center;color:transparent;cursor:pointer;background:#fff;transition:.18s;font-size:13px;
+}
+.ck[aria-checked="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.ck:focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+.unit-line .u-main{flex:1;font-size:14.5px}
+.unit-line .u-main b{display:block;font-weight:600}
+.unit-line .u-main span{display:block;font-size:13px;color:var(--soft)}
+.unit-line.done .u-main{color:var(--soft)}
+.unit-line.done .u-main b{text-decoration:line-through;text-decoration-color:rgba(72,88,111,.45)}
+
+.outcome{
+  background:var(--wash);border-left:3px solid var(--stamp);border-radius:0 10px 10px 0;
+  padding:13px 15px;font-size:14px;
+}
+
+/* progress */
+.progress-wrap{display:flex;align-items:center;gap:14px;margin:8px 4px 14px}
+.progress-label{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--soft);white-space:nowrap}
+.bar{flex:1;height:10px;background:var(--wash);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--stamp),var(--stamp-2));border-radius:99px;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.progress-count{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--stamp);white-space:nowrap}
+
+/* weekly table */
+.wtable{width:100%;border-collapse:separate;border-spacing:0;margin-top:6px}
+.wtable th{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stamp);
+  text-align:left;padding:9px 12px;background:var(--wash);border-bottom:2px solid var(--stamp);
+}
+.wtable th:first-child{border-radius:9px 0 0 0;width:64px}
+.wtable th.thck{width:50px}
+.wtable th:last-child{border-radius:0 9px 0 0}
+.wrow td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14.5px;position:relative}
+.wrow:nth-child(even) td{background:#F8FAFD}
+.wrow:hover td{background:var(--wash)}
+.wnum{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--stamp);text-align:center}
+.wrow.done td{color:var(--soft)}
+.wrow.done .wnum{color:var(--ok)}
+.wrow td:last-child{padding-right:34px}
+
+/* pills */
+.pill-row{display:flex;flex-wrap:wrap;gap:8px}
+.pill{
+  position:relative;font-size:13.5px;padding:7px 30px 7px 13px;border-radius:99px;
+  border:1px solid var(--line);background:var(--paper);transition:.15s;display:inline-flex;align-items:center;
+}
+.pill:hover{transform:translateY(-1px);border-color:var(--stamp)}
+.pill .del{right:3px}
+.pill .del:hover{background:none}
+
+/* annual grid */
+.acard{background:#fff;border:1.5px solid var(--line);border-radius:var(--r);margin-top:16px;overflow:hidden}
+.acard-head{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--wash);border-bottom:1.5px solid var(--line)}
+.acard-head .months{font-family:'IBM Plex Serif',serif;font-weight:600;font-size:17px;flex:1}
+.acard-head .mono{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--seal);font-weight:600;letter-spacing:.08em}
+.acard-body{padding:8px 18px 16px}
+
+/* footer */
+.appfoot{
+  max-width:1060px;margin:0 auto;padding:26px 16px 40px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  color:var(--soft);font-size:13px;border-top:1px dashed var(--line);
+}
+.appfoot .mono{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em}
+
+/* toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;z-index:100;opacity:0;transition:.35s;pointer-events:none;
+  max-width:90vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media (max-width:640px){
+  .letterhead{padding:22px 18px 18px}
+  .stamp{position:static;transform:rotate(-2deg);display:inline-block;margin-bottom:12px}
+  .period-head{padding:14px}
+  .period-content{padding:2px 14px 16px}
+  .wtable th.thide,.wrow td.thide{display:none}
+}
+
+/* ───── Print ───── */
+@media print{
+  body{background:#fff}
+  .topbar,.toolbar,.edit-hint,.add,.del,.appfoot,.toast,.chev,.progress-wrap{display:none !important}
+  .wrap{padding:0;max-width:none}
+  .view{display:none !important}
+  .view.active{display:block !important}
+  .period{border-color:#999;box-shadow:none;break-inside:avoid}
+  .period-body{grid-template-rows:1fr !important}
+  .letterhead{border-color:#333}
+  [contenteditable="true"]:hover{background:none}
+  .wrow td,.wtable th{padding:6px 8px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#" onclick="return false">
+      <!-- LOGO -->
+      <svg width="46" height="46" viewBox="0 0 100 100" role="img" aria-label="Logo Besiana Demi">
+        <circle cx="50" cy="50" r="47" fill="none" stroke="#2B4C9B" stroke-width="3.5"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#2B4C9B" stroke-width="1.2" stroke-dasharray="2.5 3.5"/>
+        <!-- envelope -->
+        <rect x="28" y="36" width="44" height="30" rx="3.5" fill="#EEF1F7" stroke="#2B4C9B" stroke-width="2.6"/>
+        <path d="M29.5 39 L50 54 L70.5 39" fill="none" stroke="#2B4C9B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- seal -->
+        <circle cx="68" cy="63" r="12.5" fill="#B3372E"/>
+        <text x="68" y="68" font-family="Georgia, serif" font-size="12.5" font-weight="bold" fill="#fff" text-anchor="middle">BD</text>
+        <!-- pen nib -->
+        <path d="M24 70 L33 61 L36.5 64.5 L27.5 73.5 L23 74.8 Z" fill="#1C2B45"/>
+        <circle cx="31.6" cy="65.9" r="1.3" fill="#fff"/>
+      </svg>
+      <span>
+        <span class="brand-name" id="brandName">Besiana Demi</span><br>
+        <span class="brand-sub">Planifikimi mësimor</span>
+      </span>
+    </a>
+    <nav class="nav" role="tablist" aria-label="Planet">
+      <button class="active" data-view="vjetor"  onclick="showView('vjetor',this)">Plani vjetor</button>
+      <button data-view="dymujor" onclick="showView('dymujor',this)">Plani dymujor</button>
+      <button data-view="javor"   onclick="showView('javor',this)">Plani javor</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════ TOOLBAR ══════════ -->
+<div class="toolbar">
+  <button class="tbtn" onclick="window.print()">🖨 Printo pamjen</button>
+  <button class="tbtn" onclick="exportJSON()">⬇ Shkarko backup</button>
+  <button class="tbtn" onclick="document.getElementById('importFile').click()">⬆ Ngarko backup</button>
+  <input type="file" id="importFile" accept=".json" hidden onchange="importJSON(this)">
+  <button class="tbtn danger" onclick="resetAll()">↺ Rikthe origjinalin</button>
+  <span class="save-state" id="saveState"><span class="dot"></span><span id="saveTxt">U ruajt</span></span>
+</div>
+<p class="edit-hint">✎ <b>Gjithçka është e editueshme:</b> kliko mbi çdo tekst dhe shkruaj direkt — ndryshimet ruhen automatikisht në këtë pajisje. Përdor „Shkarko backup" për të ruajtur një kopje ose për ta bartur në pajisje tjetër.</p>
+
+<main class="wrap">
+  <div class="view active" id="view-vjetor"></div>
+  <div class="view" id="view-dymujor"></div>
+  <div class="view" id="view-javor"></div>
+</main>
+
+<footer class="appfoot">
+  <span>© <span id="yearNow"></span> · Aplikacion planifikimi për mësimdhënës</span>
+  <span class="mono">BESIANA DEMI · KORRESPONDENCA DHE KOMUNIKIMI ME PALË</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════ DEFAULT DATA ═══════════════ */
+const DEFAULT = {
+  meta:{
+    teacher:"Prof. Besiana Demi",
+    year:"2026/27",
+    subject:"Korrespondenca dhe komunikimi me palë",
+    klasa:"XI",
+    fusha:"Jeta dhe puna"
+  },
+  vjetor:{
+    kompetencat:"I-1,2,3,6,8 · II-1,2,3,4,5,10 · III-1,3,5,6,8 · IV-1,2,4,8,9 · V-1,4,6,7 · VI-1,3,4,5,6,9",
+    fushaKurr:"1-1,2 · 2-1,2 · 3-1,2,3 · 4-1,2,3 · 6-1,2 · 7-1,2 · 8-2 · 9-1",
+    periods:[
+      { months:"Shtator – Tetor", temat:[
+        "Korrespondenca bashkëkohore në administratë dhe rëndësia e saj: palët në korrespondencë, parimet themelore, zhvillimi i afarizmit sekretaresk",
+        "Korrespondenca në lidhje me mbajtjen e mbledhjeve; procesverbali"
+      ]},
+      { months:"Nëntor – Dhjetor", temat:[
+        "Letrat afariste: kuptimi, forma dhe llojet",
+        "Korrespondenca zyrtare — llojet: korrespondenca gjyqësore, diplomatike",
+        "Shkrimi i akteve zyrtare: kërkesa, çertifikata, vërtetimi, reversi, kontrata dhe nënkontrata"
+      ]},
+      { months:"Janar – Shkurt", temat:[
+        "Organizimi i udhëtimeve zyrtare: hapat e përgatitjes, ftesa dhe axhenda e veprimtarisë, mjeti i udhëtimit, shpenzimet, mëditjet dhe raportimi",
+        "Korrespondenca në lidhje me marrjen në punë: themelimi i marrëdhënies së punës, shpallja e konkursit, aplikacioni i punësimit, intervista, marrja e vendimit, lidhja e kontratës"
+      ]},
+      { months:"Mars – Prill", temat:[
+        "Baza e komunikimit: kuptimi, rëndësia, modeli i procesit, tipet, rrjetet dhe mjetet e komunikimit",
+        "Elektronika e komunikimit: telekomunikimi, telekonferenca, përparësitë dhe dobësitë, analiza transaksionale",
+        "Kodet e komunikimit dhe kuptimi i tyre: gjuha njerëzore, kodi verbal dhe joverbal"
+      ]},
+      { months:"Maj – Qershor", temat:[
+        "Komunikimi ndër-kulturor dhe koncepti: modeli ndërkulturor i komunikimit, edukimi dhe arsimimi, ligji dhe rregullat, ekonomia, politika, normat sociale",
+        "Korrespondenca gjatë procedurës së shitëblerjes: porosia, konfirmimi, fletëdërgesa, fatura"
+      ]}
+    ]
+  },
+  dymujor:{
+    muajt:"Maj – Qershor",
+    ore:"16 orë",
+    tema:"Komunikimi ndër-kulturor dhe korrespondenca gjatë procedurës së shitëblerjes",
+    nderkurrikulare:"Shkrimi ligjor, veprimtaria administrative, praktika profesionale, ekonomia dhe ndërmarrësia",
+    temat:[
+      { tag:"TEMA A", title:"Komunikimi ndër-kulturor dhe koncepti", sub:"Modeli ndërkulturor i komunikimit dhe faktorët që e formësojnë atë",
+        units:[
+          {t:"Modeli ndërkulturor i komunikimit", d:"Koncepti dhe rëndësia e komunikimit mes kulturave të ndryshme", done:false},
+          {t:"Edukimi dhe arsimimi", d:"Ndikimi i formimit arsimor në mënyrën e komunikimit", done:false},
+          {t:"Ligji dhe rregullat", d:"Korniza ligjore dhe rregullat si faktorë kulturorë", done:false},
+          {t:"Ekonomia, politika dhe normat sociale", d:"Faktorët shoqërorë që formësojnë komunikimin ndërkulturor", done:false}
+        ],
+        outcome:"Në përfundim, nxënësi/ja shpjegon konceptin dhe modelin ndërkulturor të komunikimit dhe analizon ndikimin e edukimit e arsimimit, ligjit e rregullave, ekonomisë, politikës dhe normave sociale në komunikim."
+      },
+      { tag:"TEMA B", title:"Korrespondenca gjatë procedurës së shitëblerjes", sub:"Dokumentet afariste: nga porosia deri te fatura",
+        units:[
+          {t:"Porosia", d:"Hartimi dhe elementet e porosisë afariste", done:false},
+          {t:"Konfirmimi", d:"Konfirmimi i porosisë dhe roli i tij në marrëdhënien afariste", done:false},
+          {t:"Fletëdërgesa dhe fatura", d:"Dokumentet shoqëruese të mallit dhe të pagesës", done:false}
+        ],
+        outcome:"Në përfundim, nxënësi/ja harton dokumentet e korrespondencës gjatë procedurës së shitëblerjes — porosinë, konfirmimin, fletëdërgesën dhe faturën — dhe i zbaton ato në situata praktike afariste."
+      }
+    ],
+    mesimdhenia:["Ligjëratë","Stuhi mendimesh","Nxënësi në qendër","Interpretim","Demonstrim","Bashkëbisedim","Bashkëpunim","Pyetje–përgjigje","Punë në grupe"],
+    vleresimi:["Vlerësimi i përgjigjeve me gojë","Vlerësimi i ndihmesës në grup","Vlerësimi i aktivitetit gjatë debateve në klasë","Vlerësimi i detyrave të shtëpisë","Teste për një grup temash të caktuara","Test në fund të kategorisë së përmbajtjes"],
+    burimet:["Libri „Korrespondenca dhe komunikimi me palë” nga autorë të ndryshëm","Broshura të ndryshme profesionale","Skica dhe softuerë arsimorë","Interneti — modele dokumentesh afariste (porosi, fatura etj.)"]
+  },
+  javor:{
+    oreJave:"2 orë në javë",
+    periods:[
+      { months:"Shtator – Tetor", sub:"Korrespondenca bashkëkohore në administratë · Mbledhjet dhe procesverbali", rows:[
+        {o1:"Njohja me lëndën, planin vjetor dhe kriteret e vlerësimit", o2:"Korrespondenca bashkëkohore në administratë — kuptimi dhe rëndësia", done:false},
+        {o1:"Palët në korrespondencë", o2:"Parimet themelore të korrespondencës", done:false},
+        {o1:"Zhvillimi i afarizmit sekretaresk", o2:"Ushtrime — analiza e shembujve të korrespondencës", done:false},
+        {o1:"Përsëritje e temës", o2:"Vlerësim me gojë dhe detyra praktike", done:false},
+        {o1:"Mbledhjet — kuptimi dhe llojet", o2:"Përgatitja dhe thirrja e mbledhjes", done:false},
+        {o1:"Rrjedha e mbledhjes", o2:"Procesverbali — kuptimi dhe elementet", done:false},
+        {o1:"Llojet e procesverbalit", o2:"Ushtrime — hartimi i procesverbalit", done:false},
+        {o1:"Punë praktike — simulim mbledhjeje me procesverbal", o2:"Përsëritje e grupit të temave", done:false},
+        {o1:"Test për grupin e temave", o2:"Analiza e testit dhe vlerësimi", done:false}
+      ]},
+      { months:"Nëntor – Dhjetor", sub:"Letrat afariste · Korrespondenca zyrtare · Shkrimi i akteve zyrtare", rows:[
+        {o1:"Letrat afariste — kuptimi", o2:"Forma e letrës afariste", done:false},
+        {o1:"Llojet e letrave afariste", o2:"Ushtrime — hartimi i letrës afariste", done:false},
+        {o1:"Korrespondenca zyrtare — kuptimi dhe llojet", o2:"Korrespondenca gjyqësore", done:false},
+        {o1:"Korrespondenca diplomatike", o2:"Ushtrime — shembuj të korrespondencës zyrtare", done:false},
+        {o1:"Shkrimi i akteve zyrtare — kërkesa", o2:"Çertifikata dhe vërtetimi", done:false},
+        {o1:"Reversi", o2:"Kontrata dhe nënkontrata", done:false},
+        {o1:"Punë praktike — hartimi i akteve zyrtare", o2:"Përsëritje e grupit të temave", done:false},
+        {o1:"Test për grupin e temave", o2:"Analiza e testit dhe vlerësimi gjysmëvjetor", done:false}
+      ]},
+      { months:"Janar – Shkurt", sub:"Organizimi i udhëtimeve zyrtare · Korrespondenca në lidhje me marrjen në punë", rows:[
+        {o1:"Udhëtimet zyrtare — hapat e përgatitjes", o2:"Ftesa dhe axhenda e veprimtarisë", done:false},
+        {o1:"Mjeti i udhëtimit dhe shpenzimet", o2:"Mëditjet dhe raportimi", done:false},
+        {o1:"Ushtrime — organizimi i një udhëtimi zyrtar", o2:"Përsëritje e temës", done:false},
+        {o1:"Marrja në punë — themelimi i marrëdhënies së punës", o2:"Shpallja e konkursit", done:false},
+        {o1:"Aplikacioni i punësimit dhe CV-ja", o2:"Intervista e punës", done:false},
+        {o1:"Marrja e vendimit dhe lidhja e kontratës", o2:"Punë praktike — simulim i procesit të punësimit; vlerësim", done:false}
+      ]},
+      { months:"Mars – Prill", sub:"Baza e komunikimit · Elektronika e komunikimit · Kodet e komunikimit", rows:[
+        {o1:"Baza e komunikimit — kuptimi dhe rëndësia", o2:"Modeli i procesit të komunikimit", done:false},
+        {o1:"Tipet e komunikimit", o2:"Rrjetet e komunikimit", done:false},
+        {o1:"Mjetet e komunikimit", o2:"Ushtrime dhe përsëritje", done:false},
+        {o1:"Elektronika e komunikimit — telekomunikimi", o2:"Telekonferenca", done:false},
+        {o1:"Përparësitë dhe dobësitë e komunikimit elektronik", o2:"Analiza transaksionale", done:false},
+        {o1:"Kodet e komunikimit dhe kuptimi i tyre", o2:"Kuptimi i gjuhës njerëzore", done:false},
+        {o1:"Kodi verbal", o2:"Kodi joverbal", done:false},
+        {o1:"Përsëritje e grupit të temave", o2:"Test për grupin e temave", done:false}
+      ]},
+      { months:"Maj – Qershor", sub:"Komunikimi ndër-kulturor · Korrespondenca gjatë procedurës së shitëblerjes", rows:[
+        {o1:"Komunikimi ndër-kulturor — koncepti", o2:"Modeli ndërkulturor i komunikimit", done:false},
+        {o1:"Edukimi dhe arsimimi si faktorë të komunikimit", o2:"Ligji dhe rregullat", done:false},
+        {o1:"Ekonomia dhe politika", o2:"Normat sociale", done:false},
+        {o1:"Korrespondenca gjatë shitëblerjes — porosia", o2:"Konfirmimi i porosisë", done:false},
+        {o1:"Fletëdërgesa", o2:"Fatura", done:false},
+        {o1:"Punë praktike — dosja e dokumenteve të shitëblerjes", o2:"Përsëritje vjetore dhe vlerësimi përfundimtar", done:false}
+      ]}
+    ]
+  }
+};
+
+/* ═══════════════ STATE & STORAGE ═══════════════ */
+const KEY = "bd_planifikimi_v1";
+let state;
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ state = JSON.parse(raw); return; }
+  }catch(e){}
+  state = JSON.parse(JSON.stringify(DEFAULT));
+}
+let saveTimer;
+function save(){
+  const el = document.getElementById('saveState');
+  el.classList.add('saving');
+  document.getElementById('saveTxt').textContent = "Duke ruajtur…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+    el.classList.remove('saving');
+    document.getElementById('saveTxt').textContent = "U ruajt";
+  }, 400);
+}
+
+/* helpers */
+function get(path){ return path.split('.').reduce((o,k)=> o[isNaN(k)?k:+k], state); }
+function set(path, val){
+  const ks = path.split('.'); const last = ks.pop();
+  const obj = ks.reduce((o,k)=> o[isNaN(k)?k:+k], state);
+  obj[isNaN(last)?last:+last] = val;
+  save();
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function ed(path, cls=""){ return `contenteditable="true" spellcheck="false" data-path="${path}" class="${cls}"`; }
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ═══════════════ RENDER: VJETOR ═══════════════ */
+function renderVjetor(){
+  const v = state.vjetor, m = state.meta;
+  let html = `
+  <header class="letterhead">
+    <div class="stamp"><span ${ed('meta.year')}>${esc(m.year)}</span><small>Viti shkollor</small></div>
+    <p class="eyebrow">Planifikimi vjetor</p>
+    <h1 class="doc-title" ${ed('meta.subject')}>${esc(m.subject)}</h1>
+    <p class="subject">Temat mësimore të shpërndara gjatë muajve — 5 periudha dymujore</p>
+    <dl class="meta">
+      <div><dt>Fusha</dt><dd ${ed('meta.fusha')}>${esc(m.fusha)}</dd></div>
+      <div><dt>Klasa</dt><dd ${ed('meta.klasa')}>${esc(m.klasa)}</dd></div>
+      <div><dt>Mësimdhënësja</dt><dd ${ed('meta.teacher')}>${esc(m.teacher)}</dd></div>
+    </dl>
+  </header>`;
+
+  v.periods.forEach((p,pi)=>{
+    html += `
+    <section class="acard">
+      <div class="acard-head">
+        <span class="tag">${pi+1}</span>
+        <span class="months" ${ed(`vjetor.periods.${pi}.months`)}>${esc(p.months)}</span>
+        <span class="mono">${p.temat.length} tema</span>
+      </div>
+      <div class="acard-body">
+        <p class="section-label">Temat mësimore</p>
+        ${p.temat.map((t,ti)=>`
+          <div class="row-item">
+            <span class="bullet">▪</span>
+            <div class="txt" ${ed(`vjetor.periods.${pi}.temat.${ti}`)}>${esc(t)}</div>
+            <button class="del" title="Fshij temën" onclick="delItem('vjetor.periods.${pi}.temat',${ti},renderVjetor)">✕</button>
+          </div>`).join('')}
+        <button class="add" onclick="addItem('vjetor.periods.${pi}.temat','Tema e re…',renderVjetor)">＋ Shto temë</button>
+      </div>
+    </section>`;
+  });
+
+  html += `
+  <section class="acard">
+    <div class="acard-head"><span class="tag">RK</span><span class="months">Rezultatet e kompetencave</span></div>
+    <div class="acard-body">
+      <p class="section-label">Kompetencat (për shkallë)</p>
+      <div class="row-item"><span class="bullet">§</span><div class="txt" style="font-family:'IBM Plex Mono',monospace;font-size:13.5px" ${ed('vjetor.kompetencat')}>${esc(v.kompetencat)}</div></div>
+      <p class="section-label">Rezultatet e fushës kurrikulare</p>
+      <div class="row-item"><span class="bullet">§</span><div class="txt" style="font-family:'IBM Plex Mono',monospace;font-size:13.5px" ${ed('vjetor.fushaKurr')}>${esc(v.fushaKurr)}</div></div>
+    </div>
+  </section>`;
+
+  document.getElementById('view-vjetor').innerHTML = html;
+}
+
+/* ═══════════════ RENDER: DYMUJOR ═══════════════ */
+function renderDymujor(){
+  const d = state.dymujor, m = state.meta;
+  const allUnits = d.temat.flatMap(t=>t.units);
+  const done = allUnits.filter(u=>u.done).length;
+
+  let html = `
+  <header class="letterhead">
+    <div class="stamp"><span ${ed('dymujor.muajt')}>${esc(d.muajt)}</span><small>Viti shkollor <span ${ed('meta.year')}>${esc(m.year)}</span></small></div>
+    <p class="eyebrow">Planifikimi dymujor i njësive mësimore</p>
+    <h1 class="doc-title" ${ed('meta.subject')}>${esc(m.subject)}</h1>
+    <p class="subject">Tema mësimore: <b ${ed('dymujor.tema')}>${esc(d.tema)}</b></p>
+    <dl class="meta">
+      <div><dt>Fusha</dt><dd ${ed('meta.fusha')}>${esc(m.fusha)}</dd></div>
+      <div><dt>Klasa</dt><dd ${ed('meta.klasa')}>${esc(m.klasa)}</dd></div>
+      <div><dt>Mësimdhënësja</dt><dd ${ed('meta.teacher')}>${esc(m.teacher)}</dd></div>
+      <div><dt>Koha e nevojshme</dt><dd ${ed('dymujor.ore')}>${esc(d.ore)}</dd></div>
+    </dl>
+  </header>
+
+  <div class="progress-wrap">
+    <span class="progress-label">Progresi i njësive</span>
+    <div class="bar"><i style="width:${allUnits.length? done/allUnits.length*100 : 0}%"></i></div>
+    <span class="progress-count">${done} / ${allUnits.length}</span>
+  </div>`;
+
+  d.temat.forEach((t,ti)=>{
+    html += `
+    <article class="period open">
+      <button class="period-head" onclick="togglePeriod(this)" aria-expanded="true">
+        <span class="tag" ${ed(`dymujor.temat.${ti}.tag`)} onclick="event.stopPropagation()">${esc(t.tag)}</span>
+        <span class="period-title">
+          <h2 ${ed(`dymujor.temat.${ti}.title`)} onclick="event.stopPropagation()">${esc(t.title)}</h2>
+          <p ${ed(`dymujor.temat.${ti}.sub`)} onclick="event.stopPropagation()">${esc(t.sub)}</p>
+        </span>
+        <span class="chev">▾</span>
+      </button>
+      <div class="period-body"><div class="period-inner"><div class="period-content">
+        <p class="section-label">Njësitë mësimore</p>
+        ${t.units.map((u,ui)=>`
+          <div class="unit-line ${u.done?'done':''}">
+            <span class="ck" role="checkbox" tabindex="0" aria-checked="${u.done}" aria-label="Realizuar"
+              onclick="toggleUnit(${ti},${ui})" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleUnit(${ti},${ui})}">✓</span>
+            <div class="u-main">
+              <b ${ed(`dymujor.temat.${ti}.units.${ui}.t`)}>${esc(u.t)}</b>
+              <span ${ed(`dymujor.temat.${ti}.units.${ui}.d`)}>${esc(u.d)}</span>
+            </div>
+            <button class="del" title="Fshij njësinë" onclick="delItem('dymujor.temat.${ti}.units',${ui},renderDymujor)">✕</button>
+          </div>`).join('')}
+        <button class="add" onclick="addUnit(${ti})">＋ Shto njësi</button>
+        <p class="section-label">Rezultati i të nxënit</p>
+        <p class="outcome" ${ed(`dymujor.temat.${ti}.outcome`)}>${esc(t.outcome)}</p>
+      </div></div></div>
+    </article>`;
+  });
+
+  html += `<button class="add" style="margin-top:14px" onclick="addTema()">＋ Shto temë të re</button>`;
+
+  html += `
+  <section class="acard">
+    <div class="acard-head"><span class="tag">M</span><span class="months">Metodologjia e mësimdhënies</span></div>
+    <div class="acard-body"><div class="pill-row" style="padding-top:12px">
+      ${d.mesimdhenia.map((p,i)=>`<span class="pill"><span ${ed(`dymujor.mesimdhenia.${i}`)}>${esc(p)}</span><button class="del" onclick="delItem('dymujor.mesimdhenia',${i},renderDymujor)">✕</button></span>`).join('')}
+    </div><button class="add" onclick="addItem('dymujor.mesimdhenia','Metodë e re',renderDymujor)">＋ Shto metodë</button></div>
+  </section>
+
+  <section class="acard">
+    <div class="acard-head"><span class="tag">V</span><span class="months">Metodologjia e vlerësimit</span></div>
+    <div class="acard-body" style="padding-top:10px">
+      ${d.vleresimi.map((p,i)=>`
+        <div class="row-item"><span class="bullet">${String(i+1).padStart(2,'0')}</span>
+        <div class="txt" ${ed(`dymujor.vleresimi.${i}`)}>${esc(p)}</div>
+        <button class="del" onclick="delItem('dymujor.vleresimi',${i},renderDymujor)">✕</button></div>`).join('')}
+      <button class="add" onclick="addItem('dymujor.vleresimi','Formë e re vlerësimi',renderDymujor)">＋ Shto</button>
+    </div>
+  </section>
+
+  <section class="acard">
+    <div class="acard-head"><span class="tag">B</span><span class="months">Burimet</span></div>
+    <div class="acard-body" style="padding-top:10px">
+      ${d.burimet.map((p,i)=>`
+        <div class="row-item"><span class="bullet">▪</span>
+        <div class="txt" ${ed(`dymujor.burimet.${i}`)}>${esc(p)}</div>
+        <button class="del" onclick="delItem('dymujor.burimet',${i},renderDymujor)">✕</button></div>`).join('')}
+      <button class="add" onclick="addItem('dymujor.burimet','Burim i ri',renderDymujor)">＋ Shto burim</button>
+      <p class="section-label">Çështjet ndërkurrikulare</p>
+      <div class="row-item"><span class="bullet">§</span><div class="txt" ${ed('dymujor.nderkurrikulare')}>${esc(d.nderkurrikulare)}</div></div>
+    </div>
+  </section>`;
+
+  document.getElementById('view-dymujor').innerHTML = html;
+}
+
+/* ═══════════════ RENDER: JAVOR ═══════════════ */
+function renderJavor(){
+  const j = state.javor, m = state.meta;
+  const allRows = j.periods.flatMap(p=>p.rows);
+  const total = allRows.length, done = allRows.filter(r=>r.done).length;
+  let weekNo = 0;
+
+  let html = `
+  <header class="letterhead">
+    <div class="stamp"><span ${ed('meta.year')}>${esc(m.year)}</span><small>Viti shkollor</small></div>
+    <p class="eyebrow">Planifikimi javor i njësive mësimore — ${total} javë · ${total*2} orë</p>
+    <h1 class="doc-title" ${ed('meta.subject')}>${esc(m.subject)}</h1>
+    <p class="subject">Klasa <b ${ed('meta.klasa')}>${esc(m.klasa)}</b> · <span ${ed('javor.oreJave')}>${esc(j.oreJave)}</span> · <b ${ed('meta.teacher')}>${esc(m.teacher)}</b></p>
+  </header>
+
+  <div class="progress-wrap">
+    <span class="progress-label">Javët e realizuara</span>
+    <div class="bar"><i style="width:${total? done/total*100 : 0}%"></i></div>
+    <span class="progress-count">${done} / ${total}</span>
+  </div>`;
+
+  j.periods.forEach((p,pi)=>{
+    const start = weekNo+1, end = weekNo+p.rows.length;
+    html += `
+    <article class="period ${pi===0?'open':''}">
+      <button class="period-head" onclick="togglePeriod(this)" aria-expanded="${pi===0}">
+        <span class="tag">P${pi+1}</span>
+        <span class="period-title">
+          <h2 ${ed(`javor.periods.${pi}.months`)} onclick="event.stopPropagation()">${esc(p.months)}</h2>
+          <p><span ${ed(`javor.periods.${pi}.sub`)} onclick="event.stopPropagation()">${esc(p.sub)}</span> · Java ${start}–${end}</p>
+        </span>
+        <span class="chev">▾</span>
+      </button>
+      <div class="period-body"><div class="period-inner"><div class="period-content">
+        <table class="wtable">
+          <thead><tr><th>Java</th><th class="thck thide">✓</th><th>Ora 1</th><th>Ora 2</th></tr></thead>
+          <tbody>
+            ${p.rows.map((r,ri)=>{
+              weekNo++;
+              return `
+              <tr class="wrow ${r.done?'done':''}">
+                <td class="wnum">${weekNo}</td>
+                <td class="thide" style="text-align:center">
+                  <span class="ck" role="checkbox" tabindex="0" aria-checked="${r.done}" aria-label="Java e realizuar"
+                    onclick="toggleWeek(${pi},${ri})" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleWeek(${pi},${ri})}">✓</span>
+                </td>
+                <td ${ed(`javor.periods.${pi}.rows.${ri}.o1`)}>${esc(r.o1)}</td>
+                <td ${ed(`javor.periods.${pi}.rows.${ri}.o2`)}>${esc(r.o2)}
+                  <button class="del" title="Fshij javën" onclick="delItem('javor.periods.${pi}.rows',${ri},renderJavor)">✕</button>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <button class="add" onclick="addWeek(${pi})">＋ Shto javë në këtë periudhë</button>
+      </div></div></div>
+    </article>`;
+  });
+
+  document.getElementById('view-javor').innerHTML = html;
+}
+
+/* ═══════════════ ACTIONS ═══════════════ */
+function togglePeriod(btn){
+  const card = btn.closest('.period');
+  const open = card.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open);
+}
+function toggleUnit(ti,ui){
+  state.dymujor.temat[ti].units[ui].done = !state.dymujor.temat[ti].units[ui].done;
+  save(); renderDymujor();
+}
+function toggleWeek(pi,ri){
+  state.javor.periods[pi].rows[ri].done = !state.javor.periods[pi].rows[ri].done;
+  save(); renderJavor();
+}
+function addItem(path, placeholder, rerender){
+  get(path).push(placeholder); save(); rerender();
+}
+function delItem(path, i, rerender){
+  const arr = get(path);
+  if(!confirm("Ta fshij këtë element?")) return;
+  arr.splice(i,1); save(); rerender();
+}
+function addUnit(ti){
+  state.dymujor.temat[ti].units.push({t:"Njësia e re", d:"Përshkrimi…", done:false});
+  save(); renderDymujor();
+}
+function addTema(){
+  const n = state.dymujor.temat.length;
+  state.dymujor.temat.push({
+    tag:"TEMA "+String.fromCharCode(65+n), title:"Tema e re", sub:"Përshkrim i shkurtër…",
+    units:[{t:"Njësia e re", d:"Përshkrimi…", done:false}],
+    outcome:"Rezultati i të nxënit…"
+  });
+  save(); renderDymujor();
+}
+function addWeek(pi){
+  state.javor.periods[pi].rows.push({o1:"Njësia — ora 1", o2:"Njësia — ora 2", done:false});
+  save(); renderJavor();
+}
+function resetAll(){
+  if(!confirm("Kjo i kthen TË GJITHA planet në versionin origjinal dhe fshin ndryshimet e tua. Vazhdojmë?")) return;
+  state = JSON.parse(JSON.stringify(DEFAULT));
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  renderAll(); toast("U rikthye versioni origjinal");
+}
+
+/* export / import */
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "besiana-demi-planifikimi-backup.json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Backup-i u shkarkua ⬇");
+}
+function importJSON(input){
+  const f = input.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const data = JSON.parse(r.result);
+      if(!data.meta || !data.vjetor || !data.dymujor || !data.javor) throw 0;
+      state = data; save(); renderAll(); toast("Backup-i u ngarkua ✓");
+    }catch(e){ toast("Skedari nuk është backup i vlefshëm"); }
+  };
+  r.readAsText(f); input.value = "";
+}
+
+/* nav */
+function showView(id, btn){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  window.scrollTo({top:0});
+}
+
+/* editable binding (event delegation) */
+document.addEventListener('input', e=>{
+  const el = e.target.closest('[data-path]');
+  if(!el) return;
+  set(el.dataset.path, el.innerText.trim());
+  if(el.dataset.path === 'meta.teacher') syncBrand();
+});
+document.addEventListener('keydown', e=>{
+  if(e.target.closest('[contenteditable="true"]') && e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault(); e.target.blur();
+  }
+});
+function syncBrand(){
+  document.getElementById('brandName').textContent = state.meta.teacher.replace(/^Prof\.?\s*/i,'') || "Besiana Demi";
+}
+
+function renderAll(){ renderVjetor(); renderDymujor(); renderJavor(); syncBrand(); }
+
+/* flush on unload so no edit is ever lost */
+window.addEventListener('beforeunload', ()=>{
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+});
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'hidden'){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+});
+
+/* init */
+loadState();
+renderAll();
+document.getElementById('yearNow').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
